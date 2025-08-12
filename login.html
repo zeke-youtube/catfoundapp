@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>404CatFoundApp Login</title>
+  <style>
+    body {
+      background: #0f0f0f;
+      color: #00ffcc;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      padding-top: 100px;
+    }
+    input {
+      background: #111;
+      border: 1px solid #00ffcc;
+      color: #00ffcc;
+      padding: 10px;
+      margin: 10px;
+    }
+    button {
+      background: #222;
+      border: 1px solid #00ffcc;
+      color: #00ffcc;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    .cat {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="cat">🐱</div>
+  <h1>404catfound Login</h1>
+  <input type="text" placeholder="Username" id="user"><br>
+  <input type="password" placeholder="Catnip Token" id="token"><br>
+  <button onclick="login()">Enter Meowtrix</button>
+
+  <script>
+    function login() {
+      document.body.innerHTML = "<h1>Decrypting Meowtrix...</h1><p>Redirecting to /dash.html</p>";
+      setTimeout(() => {
+        window.location.href = "dash.html";
+      }, 2000); // dramatic pause
+    }
+  </script>
+</body>
+</html>
