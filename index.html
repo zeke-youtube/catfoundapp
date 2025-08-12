@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>404CatFoundApp</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+      color: #f2f2f2;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Glitchy background animation */
+    body::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 0, 255, 0.05),
+        rgba(255, 0, 255, 0.05) 2px,
+        transparent 2px,
+        transparent 4px
+      );
+      animation: drift 30s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes drift {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(50px, 50px); }
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 1em;
+      text-shadow: 0 0 5px #ff00ff, 0 0 10px #00ffff;
+      animation: glitch 1s infinite;
+      z-index: 1;
+    }
+
+    @keyframes glitch {
+      0% { text-shadow: 2px 2px #ff00ff; }
+      50% { text-shadow: -2px -2px #00ffff; }
+      100% { text-shadow: 2px -2px #ffff00; }
+    }
+
+    .button {
+      display: block;
+      width: 220px;
+      padding: 14px;
+      margin: 10px;
+      background: #ff00ff;
+      color: #fff;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      position: relative;
+      z-index: 1;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+    }
+  </style>
+</head>
+<body>
+  <h1>404CatFoundApp</h1>
+  <a href="login.html" class="button">Login</a>
+  <a href="signup.html" class="button">Sign Up</a>
+</body>
+</html>
