@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>404CatFound Lore Shrine</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+  <style>
+    body {
+      background: #0f0f0f;
+      color: #00ffcc;
+      font-family: 'Courier New', monospace;
+      padding: 20px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #111;
+      border: 1px solid #00ffcc;
+      color: #00ffcc;
+    }
+    button {
+      padding: 10px;
+      background: #222;
+      border: 1px solid #00ffcc;
+      color: #00ffcc;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    .post {
+      border: 1px solid #00ffcc;
+      padding: 10px;
+      margin: 10px 0;
+      background: #1a1a1a;
+    }
+  </style>
+</head>
+<body>
+  <h1>🐾 404CatFound Lore Shrine</h1>
+  <p>Welcome, <span id="username"></span> <span id="checkmark"></span></p>
+
+  <!-- Lore Input -->
+  <h2>Add New Lore</h2>
+  <input type="text" id="lore-title" placeholder="Lore Title">
+  <textarea id="lore-content" placeholder="Type your sacred glitch, prophecy, or meme..."></textarea>
+  <button onclick="submitLore()">Add Lore</button>
+  <button onclick="window.location.href='chat.html'">Enter Cat Chat 🐱</button>
+
+  <!-- Lore Feed -->
+  <h2>📜 Lore Feed</h2>
+  <div id="post-list"></div>
+
+  <script>
+    // 🔒 Login check
+    const username = localStorage.getItem("userName");
+    const email = localStorage.getItem("userEmail");
+    if (!username || !email) {
+      alert("You must log in to post lore.");
+      window.location.href = "index.html";
+    }
+
+    document.getElementById("username").textContent = username;
+    if (email === "zheng.hong.ze.tw@gmail.com") {
+      document.getElementById("checkmark").textContent = "✅";
+    }
+
+    // 🔥 Firebase setup
+    const firebaseConfig = {
+      apiKey: "AIzaSyB9CTykCMsXEv6ZxWn3Z90RODpo7z0-MwU",
+      authDomain: "catfoundconsole.firebaseapp.com",
+      projectId: "catfoundconsole",
+      storageBucket: "catfoundconsole.firebasestorage.app",
+      messagingSenderId: "531008584145",
+      appId: "1:531008584145:web:61ee84695d1e501fd208f0",
+      measurementId: "G-PK5KGS9L5K"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+    const db = firebase.firestore();
+
+    // 📝 Submit Lore
+    async function submitLore() {
+      const title = document.getElementById("lore-title").value.trim();
+      const content = document.getElementById("lore-content").value.trim();
+      if (!title || !content) {
+        alert("Lore must have a title and content.");
+        return;
+      }
+
+      await db.collection("posts").add({
+        title,
+        content,
+        author: email,
+        timestamp: Date.now()
+      });
+
+      document.getElementById("lore-title").value = "";
+      document.getElementById("lore-content").value = "";
+      loadPosts();
+    }
+
+    // 📥 Load Lore Posts
+    async function loadPosts() {
+      const snapshot = await db.collection("posts").orderBy("timestamp", "desc").get();
+      const postList = document.getElementById("post-list");
+      postList.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const mark = data.author === "zheng.hong.ze.tw@gmail.com" ? "✅" : "";
+        postList.innerHTML += `
+          <div class="post">
+            <h3>${data.title}</h3>
+            <p>${data.content}</p>
+            <small>Posted by ${data.author} ${mark}</small>
+          </div>
+        `;
+      });
+    }
+
+    loadPosts();
+  </script>
+</body>
+</html>
