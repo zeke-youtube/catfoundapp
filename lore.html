@@ -32,6 +32,7 @@
       cursor: pointer;
       border-radius: 8px;
       box-shadow: 0 0 10px #ff00cc;
+      margin-top: 10px;
     }
     #posts {
       margin-top: 40px;
@@ -47,6 +48,41 @@
       border-radius: 8px;
       box-shadow: 0 0 5px #ff00cc;
     }
+    .delete-btn {
+      background: transparent;
+      color: #ff00cc;
+      border: 1px solid #ff00cc;
+      padding: 5px 10px;
+      font-size: 0.9em;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    #tosBadge {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #ff00cc;
+      color: #0d0d0d;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ff00cc;
+      text-decoration: none;
+      z-index: 999;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: pulseBadge 2s infinite;
+    }
+    #tosBadge:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #ff00cc;
+    }
+    @keyframes pulseBadge {
+      0% { box-shadow: 0 0 10px #ff00cc; }
+      50% { box-shadow: 0 0 20px #ff00cc; }
+      100% { box-shadow: 0 0 10px #ff00cc; }
+    }
   </style>
 </head>
 <body>
@@ -54,13 +90,13 @@
   <input type="text" id="postTitle" placeholder="Title" />
   <textarea id="postContent" placeholder="Lore scroll..."></textarea>
   <button id="submitBtn">Submit Post</button>
-
   <div id="posts"></div>
+  <a href="tos.html" id="tosBadge" target="_blank" title="Respect the lore, honor the scrolls">📜 Shrine Terms</a>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB9CTykCMsXEv6ZxWn3Z90RODpo7z0-MwU",
@@ -76,15 +112,16 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    let currentUserEmail = "";
+
     onAuthStateChanged(auth, user => {
       if (!user) {
         window.location.href = "login.html";
       } else {
-        const nameMap = {
-          "zheng.hong.ze.tw@gmail.com": "NotZeke"
-        };
-        const displayName = nameMap[user.email] || user.displayName;
+        currentUserEmail = user.email;
+        const displayName = user.email === "zheng.hong.ze.tw@gmail.com" ? "NotZeke" : user.displayName;
         localStorage.setItem("userName", displayName);
+        localStorage.setItem("userEmail", user.email);
         loadPosts();
       }
     });
@@ -92,13 +129,15 @@
     document.getElementById("submitBtn").addEventListener("click", async () => {
       const title = document.getElementById("postTitle").value;
       const content = document.getElementById("postContent").value;
-      const author = localStorage.getItem("userName") || "Unknown";
+      const author = localStorage.getItem("userName");
+      const email = localStorage.getItem("userEmail");
 
       if (title && content) {
         await addDoc(collection(db, "posts"), {
           title,
           content,
           author,
+          authorEmail: email,
           timestamp: new Date().toISOString()
         });
         document.getElementById("postTitle").value = "";
@@ -112,8 +151,8 @@
 
       onSnapshot(q, snapshot => {
         postsDiv.innerHTML = "";
-        snapshot.forEach(doc => {
-          const post = doc.data();
+        snapshot.forEach(docSnap => {
+          const post = docSnap.data();
           const postEl = document.createElement("div");
           postEl.className = "post";
           postEl.innerHTML = `
@@ -121,6 +160,18 @@
             <em>by ${post.author}</em><br/>
             <p>${post.content}</p>
           `;
+
+          const canDelete = post.authorEmail === currentUserEmail || currentUserEmail === "zheng.hong.ze.tw@gmail.com";
+          if (canDelete) {
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-btn";
+            deleteBtn.textContent = "Delete";
+            deleteBtn.onclick = async () => {
+              await deleteDoc(doc(db, "posts", docSnap.id));
+            };
+            postEl.appendChild(deleteBtn);
+          }
+
           postsDiv.appendChild(postEl);
         });
       });
