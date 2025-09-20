@@ -1,57 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>404CatFound Shrine Login</title>
+  <meta charset="UTF-8" />
+  <title>CatFound Shrine</title>
   <style>
     body {
       background: #0d0d0d;
       color: #f2f2f2;
       font-family: 'Courier New', monospace;
       text-align: center;
-      padding-top: 100px;
-      animation: fadeIn 1s ease-in;
+      padding: 50px;
     }
-
     h1 {
       font-size: 2.5em;
-      margin-bottom: 40px;
       text-shadow: 0 0 5px #ff00cc, 0 0 10px #ff00cc;
-      animation: flicker 1.5s infinite alternate;
     }
-
+    input, textarea {
+      width: 80%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: none;
+    }
     button {
       background: #ff00cc;
       color: #fff;
       border: none;
-      padding: 15px 30px;
+      padding: 10px 20px;
       font-size: 1.2em;
       cursor: pointer;
       border-radius: 8px;
       box-shadow: 0 0 10px #ff00cc;
-      transition: transform 0.2s ease;
     }
-
-    button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px #ff00cc;
+    #posts {
+      margin-top: 40px;
+      text-align: left;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes flicker {
-      0%   { opacity: 1; text-shadow: 0 0 5px #ff00cc, 0 0 10px #ff00cc; }
-      50%  { opacity: 0.8; text-shadow: 0 0 3px #ff00cc; }
-      100% { opacity: 1; text-shadow: 0 0 8px #ff00cc, 0 0 15px #ff00cc; }
+    .post {
+      background: #1a1a1a;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px #ff00cc;
     }
   </style>
+</head>
+<body>
+  <h1>🐾 CatFound Shrine</h1>
+  <input type="text" id="postTitle" placeholder="Title" />
+  <textarea id="postContent" placeholder="Lore scroll..."></textarea>
+  <button id="submitBtn">Submit Post</button>
 
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <script>
+  <div id="posts"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyB9CTykCMsXEv6ZxWn3Z90RODpo7z0-MwU",
       authDomain: "catfoundconsole.firebaseapp.com",
@@ -62,25 +72,59 @@
       measurementId: "G-PK5KGS9L5K"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    function login() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider)
-        .then(result => {
-          const user = result.user;
-          localStorage.setItem("userName", user.displayName);
-          localStorage.setItem("userEmail", user.email);
-          window.location.href = "lore.html";
-        })
-        .catch(error => {
-          alert("Login failed: " + error.message);
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        const nameMap = {
+          "zheng.hong.ze.tw@gmail.com": "NotZeke"
+        };
+        const displayName = nameMap[user.email] || user.displayName;
+        localStorage.setItem("userName", displayName);
+        loadPosts();
+      }
+    });
+
+    document.getElementById("submitBtn").addEventListener("click", async () => {
+      const title = document.getElementById("postTitle").value;
+      const content = document.getElementById("postContent").value;
+      const author = localStorage.getItem("userName") || "Unknown";
+
+      if (title && content) {
+        await addDoc(collection(db, "posts"), {
+          title,
+          content,
+          author,
+          timestamp: new Date().toISOString()
         });
+        document.getElementById("postTitle").value = "";
+        document.getElementById("postContent").value = "";
+      }
+    });
+
+    function loadPosts() {
+      const postsDiv = document.getElementById("posts");
+      const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+
+      onSnapshot(q, snapshot => {
+        postsDiv.innerHTML = "";
+        snapshot.forEach(doc => {
+          const post = doc.data();
+          const postEl = document.createElement("div");
+          postEl.className = "post";
+          postEl.innerHTML = `
+            <strong>${post.title}</strong><br/>
+            <em>by ${post.author}</em><br/>
+            <p>${post.content}</p>
+          `;
+          postsDiv.appendChild(postEl);
+        });
+      });
     }
   </script>
-</head>
-<body>
-  <h1>🐾 Enter the Shrine</h1>
-  <button onclick="login()">Login with Google</button>
 </body>
 </html>
