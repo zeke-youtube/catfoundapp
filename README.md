@@ -20,7 +20,7 @@ CatFoundApp is a Firebase-powered web app designed to help users report and loca
 ## 🚀 Getting Started
 
 1. Set up Firebase:
-   - clone app `git clone https://github.com/zeke-youtube/catfoundapp/`
+   - clone app `git clone https://github.com/zeke-youtube/catfoundapp.git`
    - Create a Firebase project
    - Enable Firestore and Auth
    - Add your config to all code
